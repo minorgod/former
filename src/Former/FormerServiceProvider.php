@@ -144,10 +144,12 @@ class FormerServiceProvider extends ServiceProvider
 	public function bindFormer(Container $app)
 	{
 		// Add config namespace
-		$app['config']->package('anahkiasen/former', __DIR__.'/../config');
+		//$app['config']->package('anahkiasen/former', __DIR__.'/../config');
+		$this->registerConfig();
 
 		$app->bind('former.framework', function ($app) {
-			return $app['former']->getFrameworkInstance($app['config']->get('former::framework'));
+			//return $app['former']->getFrameworkInstance($app['config']->get('former::framework'));
+			return $app['former']->getFrameworkInstance($app['config']->get('former.framework'));
 		});
 
 		$app->singleton('former.populator', function ($app) {
@@ -166,4 +168,52 @@ class FormerServiceProvider extends ServiceProvider
 
 		return $app;
 	}
+	
+         /**
+         * Register our config files
+         *
+         * @return void
+         */
+        protected function registerConfig()
+	{
+         	// The path to the user config file
+         	$userConfigPath = app()->configPath() . '/packages/anahkiasen/former/config.php';
+	
+         	// Path to the default config
+         	$defaultConfigPath = __DIR__ . '/../config/config.php';
+	
+         	// Load the default config
+         	$config = $this->app['files']->getRequire($defaultConfigPath);
+	
+         	if (file_exists($userConfigPath)) 
+         	{       
+         		// User has their own config, let's merge them properly
+         		$userConfig = $this->app['files']->getRequire($userConfigPath);
+         		$config     = array_replace_recursive($config, $userConfig);
+         	}
+	
+         	//set the main former config
+         	$this->app['config']->set('former', $config);
+	
+         	//now set some namespaced configs for the individual frameworks...
+         	//yes I know this is stupid, but this IS a temporary hack
+         	$frameworks = array(
+			'Nude',
+			'TwitterBootstrap',
+			'TwitterBootstrap3',
+			'ZurbFoundation',
+			'ZurbFoundation4',
+			'ZurbFoundation5'
+		);
+	            
+		foreach($frameworks as $framework){
+			$configFile =  __DIR__ . "/../config/{$framework}.php";
+			$frameworkConfig = $this->app['files']->getRequire($configFile);
+			$this->app['config']->set("former::{$framework}", $frameworkConfig);
+		}
+	
+	
+	}
+	
+	
 }

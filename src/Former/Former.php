@@ -374,7 +374,7 @@ class Former
 	 */
 	public function getOption($option, $default = null)
 	{
-		return $this->app['config']->get('former::'.$option, $default);
+		return $this->app['config']->get('former.'.$option, $default);
 	}
 
 	/**
@@ -385,7 +385,7 @@ class Former
 	 */
 	public function setOption($option, $value)
 	{
-		return $this->app['config']->set('former::'.$option, $value);
+		return $this->app['config']->set('former.'.$option, $value);
 	}
 
 	////////////////////////////////////////////////////////////////////
